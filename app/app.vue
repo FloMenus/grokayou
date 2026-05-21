@@ -1,11 +1,13 @@
 <script setup lang="ts">
-const { public: { umamiWebsiteId } } = useRuntimeConfig();
+const {
+  public: { umamiWebsiteId, umamiScriptUrl },
+} = useRuntimeConfig();
 
 useHead({
   titleTemplate: (title) => (title ? `${title} - Analytic` : "Analytic"),
   script: [
     {
-      src: "http://localhost:8001/script.js",
+      src: umamiScriptUrl,
       defer: true,
       "data-website-id": umamiWebsiteId,
     },
