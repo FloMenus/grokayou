@@ -5,7 +5,8 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt', '@sentry/nuxt/module'],
   runtimeConfig: {
     public: {
-      sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || ''
+      sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
+      umamiWebsiteId: process.env.NUXT_PUBLIC_UMAMI_WEBSITE_ID || ''
     }
   }
 })
