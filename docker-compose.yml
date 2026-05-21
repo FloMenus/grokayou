@@ -1,0 +1,91 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+  db-glitchtip:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${GLITCHTIP_DB_USER}
+      POSTGRES_PASSWORD: ${GLITCHTIP_DB_PASSWORD}
+      POSTGRES_DB: ${GLITCHTIP_DB_NAME}
+    restart: unless-stopped
+    volumes:
+      - glitchtip-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${GLITCHTIP_DB_USER} -d ${GLITCHTIP_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-umami:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${UMAMI_DB_USER}
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD}
+      POSTGRES_DB: ${UMAMI_DB_NAME}
+    restart: unless-stopped
+    volumes:
+      - umami-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${UMAMI_DB_USER} -d ${UMAMI_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  glitchtip-valkey:
+    image: valkey/valkey:9
+    restart: unless-stopped
+
+  glitchtip-web:
+    image: glitchtip/glitchtip:6
+    depends_on:
+      db-glitchtip:
+        condition: service_healthy
+      glitchtip-valkey:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${GLITCHTIP_DB_USER}:${GLITCHTIP_DB_PASSWORD}@db-glitchtip:5432/${GLITCHTIP_DB_NAME}
+      VALKEY_URL: redis://glitchtip-valkey:6379
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?GLITCHTIP_SECRET_KEY is required}
+      EMAIL_URL: ${GLITCHTIP_EMAIL_URL:-consolemail://}
+      GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-http://localhost:8000}
+      DEFAULT_FROM_EMAIL: ${GLITCHTIP_DEFAULT_FROM_EMAIL:-errors@localhost}
+      ENABLE_ADMIN: "True"
+      SERVER_ROLE: all_in_one
+    restart: unless-stopped
+    volumes:
+      - glitchtip-uploads:/code/uploads
+  umami:
+    image: ghcr.io/umami-software/umami:3.1.0
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://${UMAMI_DB_USER}:${UMAMI_DB_PASSWORD}@db-umami:5432/${UMAMI_DB_NAME}
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      PORT: 8001
+    depends_on:
+      db-umami:
+        condition: service_healthy
+    init: true
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:8001/api/heartbeat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  glitchtip-pg-data:
+  umami-pg-data:
+  glitchtip-uploads:
