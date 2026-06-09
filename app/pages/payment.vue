@@ -58,7 +58,9 @@ async function pay() {
     totalItems,
     totalPrice,
     country: cartStore.checkoutForm.country,
-  })
+  });
+  await new Promise(resolve => setTimeout(resolve, 1800));
+  (window as any).umami?.track('order_completed', { revenue: cartStore.totalPrice, currency: 'EUR' });
   cartStore.clearCart()
   router.push('/success')
 }
