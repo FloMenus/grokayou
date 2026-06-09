@@ -83,7 +83,8 @@ async function pay() {
     totalItems,
     totalPrice,
     country: cartStore.checkoutForm.country,
-  })
+  });
+  (window as any).umami?.track('order_completed', { revenue: cartStore.totalPrice, currency: 'EUR' });
   cartStore.clearCart()
   router.push('/success')
 }
