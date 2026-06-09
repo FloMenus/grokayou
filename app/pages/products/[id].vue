@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { products } from '~/services/products'
 import { useCartStore } from '~/stores/cart'
+import { trackEvent } from '~/services/tracking'
 
 definePageMeta({ layout: 'main' })
 
@@ -24,6 +25,14 @@ const addedToCart = ref(false)
 function addToCart() {
   if (!product.value) return
   cartStore.addToCart(product.value, quantity.value)
+  trackEvent('add_to_cart', {
+    productId: product.value.id,
+    productName: product.value.name,
+    category: product.value.category,
+    unitPrice: product.value.price,
+    quantity: quantity.value,
+    source: 'product_page',
+  })
   addedToCart.value = true
   setTimeout(() => { addedToCart.value = false }, 2000)
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden group">
-    <NuxtLink :to="`/products/${product.id}`" class="block">
+    <NuxtLink :to="`/products/${product.id}`" class="block" @click="trackProductClick">
       <div class="relative overflow-hidden aspect-[4/3] bg-gray-100">
         <img
           :src="product.image"
@@ -55,12 +55,31 @@
 <script setup lang="ts">
 import type { Product } from '~/types/product'
 import { useCartStore } from '~/stores/cart'
+import { trackEvent } from '~/services/tracking'
 
 const props = defineProps<{ product: Product }>()
 const cartStore = useCartStore()
 
 function addToCart() {
   cartStore.addToCart(props.product)
+  trackEvent('add_to_cart', {
+    productId: props.product.id,
+    productName: props.product.name,
+    category: props.product.category,
+    unitPrice: props.product.price,
+    quantity: 1,
+    source: 'product_card',
+  })
+}
+
+function trackProductClick() {
+  trackEvent('product_view_click', {
+    productId: props.product.id,
+    productName: props.product.name,
+    category: props.product.category,
+    unitPrice: props.product.price,
+    source: 'home_grid',
+  })
 }
 
 function formatPrice(price: number) {

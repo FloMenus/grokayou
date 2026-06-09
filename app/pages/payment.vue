@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
+import { trackEvent } from '~/services/tracking'
 
 definePageMeta({ layout: 'main' })
 
@@ -46,10 +47,18 @@ function validate() {
 
 async function pay() {
   if (!validate()) return
+
+  const totalItems = cartStore.totalItems
+  const totalPrice = Number(cartStore.totalPrice.toFixed(2))
   cartStore.setPaymentForm(form)
   isProcessing.value = true
   // Simulate payment processing
   await new Promise(resolve => setTimeout(resolve, 1800))
+  trackEvent('payment_success', {
+    totalItems,
+    totalPrice,
+    country: cartStore.checkoutForm.country,
+  })
   cartStore.clearCart()
   router.push('/success')
 }

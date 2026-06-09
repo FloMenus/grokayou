@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
+import { trackEvent } from '~/services/tracking'
 
 definePageMeta({ layout: 'main' })
 
@@ -7,6 +8,13 @@ useSeoMeta({ title: 'Mon panier – Eco-Hardware' })
 
 const cartStore = useCartStore()
 const router = useRouter()
+
+function trackCheckoutClick() {
+  trackEvent('checkout_clicked', {
+    totalItems: cartStore.totalItems,
+    totalPrice: Number(cartStore.totalPrice.toFixed(2)),
+  })
+}
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price)
@@ -121,6 +129,7 @@ function formatPrice(price: number) {
 
           <NuxtLink
             to="/checkout"
+            @click="trackCheckoutClick"
             class="w-full block text-center bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
             Commander

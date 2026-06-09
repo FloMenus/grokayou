@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import * as Sentry from '@sentry/nuxt'
 import { products, categories } from '~/services/products'
 
 definePageMeta({ layout: 'main' })
@@ -25,6 +26,8 @@ watch(() => route.query.category, (val) => {
 })
 
 function throwTemporaryError() {
+
+  // Throw asynchronously so Sentry can enqueue and send the event first.
   setTimeout(() => {
     throw new Error('Erreur temporaire de test depuis la page d\'accueil')
   }, 0)
@@ -33,7 +36,7 @@ function throwTemporaryError() {
 
 <template>
   <div>
-
+    <!-- Hero -->
     <section class="bg-gradient-to-br from-green-700 to-green-500 text-white py-20 px-4">
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">
@@ -44,6 +47,7 @@ function throwTemporaryError() {
           Ordinateurs reconditionnés, périphériques durables et accessoires fabriqués à partir de matériaux recyclés.
         </p>
 
+        <!-- Search -->
         <div class="max-w-md mx-auto relative">
           <input
             v-model="searchQuery"
@@ -66,6 +70,7 @@ function throwTemporaryError() {
     </section>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <!-- Categories filter -->
       <div class="flex flex-wrap gap-2 mb-8">
         <button
           @click="selectedCategory = ''"
@@ -89,10 +94,12 @@ function throwTemporaryError() {
         </button>
       </div>
 
+      <!-- Results count -->
       <p class="text-gray-500 text-sm mb-6">
         {{ filteredProducts.length }} produit{{ filteredProducts.length > 1 ? 's' : '' }} trouvé{{ filteredProducts.length > 1 ? 's' : '' }}
       </p>
 
+      <!-- Products grid -->
       <div v-if="filteredProducts.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
       </div>
