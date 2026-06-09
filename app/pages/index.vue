@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import * as Sentry from '@sentry/nuxt'
 import { products, categories } from '~/services/products'
 
 definePageMeta({ layout: 'main' })
@@ -24,14 +23,6 @@ const filteredProducts = computed(() => {
 watch(() => route.query.category, (val) => {
   selectedCategory.value = (val as string) || ''
 })
-
-function throwTemporaryError() {
-
-  // Throw asynchronously so Sentry can enqueue and send the event first.
-  setTimeout(() => {
-    throw new Error('Erreur temporaire de test depuis la page d\'accueil')
-  }, 0)
-}
 </script>
 
 <template>
@@ -59,13 +50,6 @@ function throwTemporaryError() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-
-        <button
-          @click="throwTemporaryError"
-          class="mt-4 inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
-        >
-          Bouton test erreur (temporaire)
-        </button>
       </div>
     </section>
 

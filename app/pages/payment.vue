@@ -16,6 +16,7 @@ if (cartStore.isEmpty) {
 const form = reactive({ ...cartStore.paymentForm })
 const errors = reactive<Record<string, string>>({})
 const isProcessing = ref(false)
+const FAILING_PRODUCT_ID = 5
 
 function formatCardNumber(value: string) {
   return value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim()
@@ -50,10 +51,34 @@ async function pay() {
 
   const totalItems = cartStore.totalItems
   const totalPrice = Number(cartStore.totalPrice.toFixed(2))
+  const hasFailingProduct = cartStore.items.some(item => item.product.id === FAILING_PRODUCT_ID)
   cartStore.setPaymentForm(form)
   isProcessing.value = true
   // Simulate payment processing
   await new Promise(resolve => setTimeout(resolve, 1800))
+
+  // Simulate a payment failure when a specific product is in the cart.
+  if (hasFailingProduct) {
+    const paymentError = new Error('Échec de paiement simulé pour le produit pilote')
+
+    trackEvent('payment_failed', {
+      totalItems,
+      totalPrice,
+      country: cartStore.checkoutForm.country,
+      reason: 'mock_specific_product_failure',
+      failingProductId: FAILING_PRODUCT_ID,
+    })
+
+    // Throw asynchronously so error tracking can capture it while preserving UX redirect.
+    setTimeout(() => {
+      throw paymentError
+    }, 0)
+
+    isProcessing.value = false
+    router.push('/payment-error')
+    return
+  }
+
   trackEvent('payment_success', {
     totalItems,
     totalPrice,

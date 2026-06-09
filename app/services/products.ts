@@ -83,7 +83,7 @@ export const products: Product[] = [
   },
   {
     id: 5,
-    name: 'Chargeur Solaire SunPower 65W',
+    name: 'Chargeur Solaire SunPower 65W (Série Pilote)',
     description: 'Chargeur universel alimenté par panneaux solaires intégrés.',
     longDescription: 'Le SunPower 65W est un chargeur universel qui combine un panneau solaire pliable haute efficacité avec une batterie intégrée de 20 000 mAh. Chargez vos appareils n\'importe où, sans dépendre du réseau électrique.',
     price: 129.99,
