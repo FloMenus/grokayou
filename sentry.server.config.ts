@@ -8,5 +8,6 @@ const dsn = rawDsn.replace('localhost:8000', 'glitchtip-web:8000')
 Sentry.init({
   dsn,
   tracesSampleRate: 1.0,
+  enableLogs: true,
   enabled: Boolean(dsn)
 })

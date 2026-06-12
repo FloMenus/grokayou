@@ -6,6 +6,7 @@ const envelopeTunnel = '/api/1/envelope/'
 Sentry.init({
   dsn,
   tracesSampleRate: 1.0,
+  enableLogs: true,
   enabled: Boolean(dsn),
   debug: import.meta.dev,
   tunnel: envelopeTunnel,

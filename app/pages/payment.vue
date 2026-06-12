@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 import { trackEvent } from '~/services/tracking'
+import { logInfo, logWarn } from '~/services/logger'
 
 definePageMeta({ layout: 'main' })
 
@@ -16,6 +17,8 @@ if (cartStore.isEmpty) {
 const form = reactive({ ...cartStore.paymentForm })
 const errors = reactive<Record<string, string>>({})
 const isProcessing = ref(false)
+
+// ID of a product that will trigger a simulated payment failure for testing purposes.
 const FAILING_PRODUCT_ID = 5
 
 function formatCardNumber(value: string) {
@@ -52,14 +55,25 @@ async function pay() {
   const totalItems = cartStore.totalItems
   const totalPrice = Number(cartStore.totalPrice.toFixed(2))
   const hasFailingProduct = cartStore.items.some(item => item.product.id === FAILING_PRODUCT_ID)
+  logInfo('payment_started', {
+    totalItems,
+    totalPrice,
+    country: cartStore.checkoutForm.country,
+  })
   cartStore.setPaymentForm(form)
   isProcessing.value = true
-  // Simulate payment processing
+
   await new Promise(resolve => setTimeout(resolve, 1800))
 
-  // Simulate a payment failure when a specific product is in the cart.
   if (hasFailingProduct) {
     const paymentError = new Error('Échec de paiement simulé pour le produit pilote')
+    logWarn('payment_failed', {
+      totalItems,
+      totalPrice,
+      country: cartStore.checkoutForm.country,
+      reason: 'mock_specific_product_failure',
+      failingProductId: FAILING_PRODUCT_ID,
+    })
 
     trackEvent('payment_failed', {
       totalItems,
@@ -69,7 +83,6 @@ async function pay() {
       failingProductId: FAILING_PRODUCT_ID,
     })
 
-    // Throw asynchronously so error tracking can capture it while preserving UX redirect.
     setTimeout(() => {
       throw paymentError
     }, 0)
@@ -80,6 +93,11 @@ async function pay() {
   }
 
   trackEvent('payment_success', {
+    totalItems,
+    totalPrice,
+    country: cartStore.checkoutForm.country,
+  });
+  logInfo('payment_success', {
     totalItems,
     totalPrice,
     country: cartStore.checkoutForm.country,
